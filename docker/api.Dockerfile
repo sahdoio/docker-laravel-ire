@@ -1,33 +1,39 @@
 
-FROM php:7.3.33-fpm
+FROM php:7.4.33-fpm
 
 WORKDIR /var/www
 
-RUN apt-get update && apt-get -f -y install unzip wget
-
 RUN apt-get update && apt-get install -y \
    build-essential \
-   libpng-dev \
-   libjpeg62-turbo-dev \
-   libfreetype6-dev \
-   libzip-dev \
-   locales \
    zip \
    vim \
    unzip \
    git \
-   curl
-   
-RUN apt-get update && apt-get install -y \
-   libmcrypt-dev \
+   curl \
+   wget \
+   less
+
+RUN apt-get install -y --no-install-recommends \
+   libjpeg62-turbo-dev \
+   libfreetype6-dev \
+   locales \
+   imagemagick \
    freetds-bin \
    freetds-dev \
    freetds-common \
-   libxml2-dev \ 
+   libmemcached-dev \
+   libxml2-dev \
+   libpng-dev \
+   libzip-dev \
+   libssl-dev \
+   libgmp-dev \
+   libgraphicsmagick1-dev \
    libxslt-dev \
    libaio1 \
    libmcrypt-dev \
-   libreadline-dev
+   libreadline-dev \
+   build-essential \
+   libmagickwand-dev
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -38,9 +44,11 @@ RUN docker-php-ext-install \
    calendar \
    exif \
    gettext \
-   pcntl mysqli \
+   pcntl \
+   mysqli \
    shmop \
-   soap bcmath \
+   soap \
+   bcmath \
    sockets \
    sysvmsg \
    sysvsem \
@@ -48,7 +56,12 @@ RUN docker-php-ext-install \
    xsl \
    opcache
 
-COPY --from=composer:1.10 /usr/bin/composer /usr/bin/composer
+RUN pecl -v install https://pecl.php.net/get/imagick-3.7.0.tgz; \
+   docker-php-ext-enable imagick;
+
+# echo "extension=imagick.so" >> /usr/local/etc/php/conf.d/imagick.ini; 
+
+COPY --from=composer:1.10.26 /usr/bin/composer /usr/bin/composer
 
 ADD php /var/www
 
